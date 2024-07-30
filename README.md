@@ -2,6 +2,17 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/SmartHome-yourself/sonoff-tx-ultimate-for-esphome/blob/master/README.md) 
 [![de](https://img.shields.io/badge/lang-de-blue.svg)](https://github.com/SmartHome-yourself/sonoff-tx-ultimate-for-esphome/blob/master/README.de.md)
 
+# Disclaimer about this Fork
+The only difference from the original project is in this file: [tx_ultimate_local_us.yaml](https://github.com/adilson0888/sonoff-tx-ultimate-for-esphome/blob/main/tx_ultimate_local_us.yaml).
+
+## Changes and Purpose
+I realigned the LEDs segments with the corresponding positions of the 3 relays for the US model. This modification is specific to the US model and won't work with different models.
+
+## Issue and Solution
+In my experience I encountered issues with the refresh_led_default script where the LEDs' behavior was not consistently matching the state of the relays. To resolve this, I added a 500ms delay in the script, which solved the problem. Additionally, I removed a few executions of this script in places where, according to my tests, they did not make a difference.
+
+## Recommendation
+If you have the TX-Ultimate US 3 relays model, I recommend giving this fork a try.
 
 # SONOFF TX Ultimate for ESPHome (Custom Component)
 This is an ESPHome custom component for the SONOFF TX Ultimate Smart Switch.  
