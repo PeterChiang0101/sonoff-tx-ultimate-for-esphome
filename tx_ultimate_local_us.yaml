@@ -14,8 +14,11 @@ substitutions:
   nightlight_brightness: "0.2"
   nightlight_color: "{80,70,0}"
 
-  latitude: "50.123456°"
-  longitude: "5.654321°"
+  latitude: "22.986017°"
+  longitude: "120.244153°"
+  toggle_relay_1_on_touch: "false"
+  toggle_relay_2_on_touch: "false"
+  toggle_relay_3_on_touch: "true"
 
   touch_brightness: "1"
   touch_color: "{0,100,100}"
@@ -78,9 +81,6 @@ esphome:
           id: touchfield_3
           state: OFF
       - binary_sensor.template.publish:
-          id: touchfield_4
-          state: OFF
-      - binary_sensor.template.publish:
           id: multi_touch
           state: OFF
       - binary_sensor.template.publish:
@@ -111,15 +111,13 @@ logger:
     tx_ultimate_touch: INFO
     uart_debug: INFO
 
+# Enable Home Assistant API
 api:
 
 ota:
 
 wifi:
   ap:
-    password: "12345678"
-    
-improv_serial:
 
 captive_portal:
 
@@ -321,7 +319,8 @@ switch:
   - platform: restart
     name: "${friendly_name} Restart"
 
-light:
+# LED control & location
+light: 
   - platform: neopixelbus
     type: GRB
     variant: WS2811
@@ -350,8 +349,8 @@ light:
     internal: true
     segments:
       - id: leds
-        from: 6
-        to: 6
+        from: 8
+        to: 8
       - id: leds
         from: 16
         to: 16
@@ -361,11 +360,11 @@ light:
     internal: true
     segments:
       - id: leds
-        from: 3
+        from: 2
         to: 3
       - id: leds
         from: 20
-        to: 20
+        to: 21
   - platform: partition
     name: "LEDs Button left"
     id: leds_button_left
@@ -393,7 +392,7 @@ light:
     internal: true
     segments:
       - id: leds
-        from: 26
+        from: 25
         to: 30
     effects:
       - addressable_scan:
@@ -531,7 +530,7 @@ sun:
   latitude: ${latitude}
   longitude: ${longitude}
 
-
+# set the default values for the LEDs
 script:
   - id: refresh_nightlight
     mode: restart
@@ -591,6 +590,7 @@ script:
           else:
             - script.execute: led_off_button_right
 
+  # LED scripts
   - id: led_on_button_left
     mode: single
     then:
@@ -620,7 +620,6 @@ script:
           red: !lambda "return id(button_color)[0]/100.0;"
           green: !lambda "return id(button_color)[1]/100.0;"
           blue:  !lambda "return id(button_color)[2]/100.0;"
-
 
   - id: led_off_button_left
     mode: single
@@ -656,7 +655,6 @@ script:
             - light.turn_off:
                 id: leds_button_middle
 
-
   - id: led_off_button_right
     mode: single
     then:
@@ -673,7 +671,6 @@ script:
           else:
             - light.turn_off:
                 id: leds_button_right
-
 
   - id: led_on_nightlight
     mode: single
@@ -732,12 +729,12 @@ script:
       - delay: 2s
       - light.turn_off:
           id: leds_bottom
-
+  # more than two points touched
   - id: led_on_full_touch
     mode: restart
     then:
       - light.turn_on:
-          id: leds_top
+          id: leds_nightlight
           brightness: ${multi_touch_brightness}
           red: !lambda "return id(multi_touch_color)[0]/100.0;"
           green: !lambda "return id(multi_touch_color)[1]/100.0;"
@@ -745,7 +742,7 @@ script:
           effect: ${multi_touch_effect}
       - delay: 2s
       - light.turn_off:
-          id: leds_top
+          id: leds_nightlight
 
 
   - id: led_on_long_touch
@@ -911,4 +908,4 @@ script:
                                   green: 0
                                   blue: 1
                         - delay: 1s
-                        - light.turn_off: leds
+                        - light.turn_off: leds    
