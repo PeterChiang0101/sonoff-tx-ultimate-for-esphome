@@ -16,6 +16,7 @@ substitutions:
 
   latitude: "22.986017°"
   longitude: "120.244153°"
+
   toggle_relay_1_on_touch: "false"
   toggle_relay_2_on_touch: "false"
   toggle_relay_3_on_touch: "true"
@@ -26,7 +27,7 @@ substitutions:
 
   long_press_brightness: "1"
   long_press_color: "{100,0,0}"
-  long_press_effect: "Pulse"
+  long_press_effect: "Scan"
 
   multi_touch_brightness: "0.7"
   multi_touch_color: "{75,82,92}"
@@ -34,7 +35,7 @@ substitutions:
 
   swipe_left_brightness: "1"
   swipe_left_color: "{0,100,0}"
-  swipe_left_effect: "Pulse"
+  swipe_left_effect: "none"
 
   swipe_right_brightness: "1"
   swipe_right_color: "{100,0,70}"
@@ -392,6 +393,9 @@ light:
           name: "Rainbow"
           speed: 5
           width: 30
+      - addressable_scan:
+          name: "Scan"
+          scan_width: 3
       - pulse:
           name: "Pulse"
           transition_length: 1.4s
@@ -780,7 +784,12 @@ script:
     then:
       - light.turn_on:
           id: leds_top
-          brightness: ${swipe_left_brightness}
+          brightness: !lambda |-
+            if(id(nightlight).state || id(nightlight_active).state){
+              return ${nightlight_brightness};
+            } else {
+              return ${swipe_left_brightness};
+            }
           red: !lambda "return id(swipe_left_color)[0]/100.0;"
           green: !lambda "return id(swipe_left_color)[1]/100.0;"
           blue:  !lambda "return id(swipe_left_color)[2]/100.0;"
@@ -838,7 +847,12 @@ script:
     then:
       - light.turn_on:
           id: leds
-          brightness: ${multi_touch_brightness}
+          brightness: !lambda |-
+            if(id(nightlight).state || id(nightlight_active).state){
+              return ${nightlight_brightness};
+            } else {
+              return ${multi_touch_brightness};
+            }
           red: !lambda "return id(multi_touch_color)[0]/100.0;"
           green: !lambda "return id(multi_touch_color)[1]/100.0;"
           blue:  !lambda "return id(multi_touch_color)[2]/100.0;"
@@ -853,7 +867,12 @@ script:
     then:
       - light.turn_on:
           id: leds
-          brightness: ${long_press_brightness}
+          brightness: !lambda |-
+            if(id(nightlight).state || id(nightlight_active).state){
+              return ${nightlight_brightness};
+            } else {
+              return ${long_press_brightness};
+            }
           red: !lambda "return id(long_press_color)[0]/100.0;"
           green: !lambda "return id(long_press_color)[1]/100.0;"
           blue:  !lambda "return id(long_press_color)[2]/100.0;"
