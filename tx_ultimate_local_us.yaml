@@ -14,8 +14,11 @@ substitutions:
   nightlight_brightness: "0.2"
   nightlight_color: "{80,70,0}"
 
-  latitude: "50.123456°"
-  longitude: "5.654321°"
+  latitude: "22.986017°"
+  longitude: "120.244153°"
+  toggle_relay_1_on_touch: "false"
+  toggle_relay_2_on_touch: "false"
+  toggle_relay_3_on_touch: "true"
 
   touch_brightness: "1"
   touch_color: "{0,100,100}"
@@ -23,19 +26,19 @@ substitutions:
 
   long_press_brightness: "1"
   long_press_color: "{100,0,0}"
-  long_press_effect: ""
+  long_press_effect: "Pulse"
 
-  multi_touch_brightness: "1"
-  multi_touch_color: "{0,0,0}"
+  multi_touch_brightness: "0.7"
+  multi_touch_color: "{75,82,92}"
   multi_touch_effect: "Rainbow"
 
   swipe_left_brightness: "1"
   swipe_left_color: "{0,100,0}"
-  swipe_left_effect: ""
+  swipe_left_effect: "Pulse"
 
   swipe_right_brightness: "1"
   swipe_right_color: "{100,0,70}"
-  swipe_right_effect: ""
+  swipe_right_effect: "Pulse"
 
   relay_1_pin: GPIO18
   relay_2_pin: GPIO17
@@ -78,9 +81,6 @@ esphome:
           id: touchfield_3
           state: OFF
       - binary_sensor.template.publish:
-          id: touchfield_4
-          state: OFF
-      - binary_sensor.template.publish:
           id: multi_touch
           state: OFF
       - binary_sensor.template.publish:
@@ -111,15 +111,23 @@ logger:
     tx_ultimate_touch: INFO
     uart_debug: INFO
 
+# Enable Home Assistant API
 api:
+  encryption:
+    key: "boCIiQZt1Hd5Fkyi+0HFqpdhdArHZYOAx3gfDKXxuAU="
 
 ota:
+  - platform: esphome
+    password: "edc758f4b95c284bde55326f3600bf59"
 
 wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    password: "12345678"
-    
-improv_serial:
+    ssid: "Tx-Ultimate-2-Gang"
+    password: "ya03sAgT8QFQ"
 
 captive_portal:
 
@@ -169,7 +177,11 @@ binary_sensor:
     name: "Touchfield 1"
     id: touchfield_1
     on_press:
-      - switch.toggle: relay_1
+      - if:
+          condition:
+            lambda: "return ${toggle_relay_1_on_touch};"
+          then:
+            - switch.toggle: relay_1
       - delay: ${button_on_time}
       - binary_sensor.template.publish:
           id: touchfield_1
@@ -179,7 +191,11 @@ binary_sensor:
     name: "Touchfield 2"
     id: touchfield_2
     on_press:
-      - switch.toggle: relay_2
+      - if:
+          condition:
+            lambda: "return ${toggle_relay_2_on_touch};"
+          then:
+            - switch.toggle: relay_2
       - delay: ${button_on_time}
       - binary_sensor.template.publish:
           id: touchfield_2
@@ -189,7 +205,11 @@ binary_sensor:
     name: "Touchfield 3"
     id: touchfield_3
     on_press:
-      - switch.toggle: relay_3
+      - if:
+          condition:
+            lambda: "return ${toggle_relay_3_on_touch};"
+          then:
+            - switch.toggle: relay_3
       - delay: ${button_on_time}
       - binary_sensor.template.publish:
           id: touchfield_3
@@ -321,7 +341,8 @@ switch:
   - platform: restart
     name: "${friendly_name} Restart"
 
-light:
+# LED control & location
+light: 
   - platform: neopixelbus
     type: GRB
     variant: WS2811
@@ -350,8 +371,8 @@ light:
     internal: true
     segments:
       - id: leds
-        from: 6
-        to: 6
+        from: 7
+        to: 7
       - id: leds
         from: 16
         to: 16
@@ -362,9 +383,9 @@ light:
     segments:
       - id: leds
         from: 3
-        to: 3
+        to: 4
       - id: leds
-        from: 20
+        from: 19
         to: 20
   - platform: partition
     name: "LEDs Button left"
@@ -386,6 +407,12 @@ light:
       - id: leds
         from: 0
         to: 31
+    effects:
+      - addressable_scan:
+          name: "Scan"
+      - addressable_rainbow:
+          name: "Rainbow"
+          speed: 5
 
   - platform: partition
     name: "LEDs Top"
@@ -393,7 +420,7 @@ light:
     internal: true
     segments:
       - id: leds
-        from: 26
+        from: 25
         to: 30
     effects:
       - addressable_scan:
@@ -402,6 +429,10 @@ light:
           name: "Rainbow"
           speed: 5
           #width: 20
+      - pulse:
+          name: "Pulse"
+          transition_length: 2s
+          update_interval: 2s
   - platform: partition
     name: "LEDs Bottom"
     id: leds_bottom
@@ -417,6 +448,10 @@ light:
           name: "Rainbow"
           speed: 5
           #width: 20
+      - pulse:
+          name: "Pulse"
+          transition_length: 2s
+          update_interval: 2s
 
 media_player:
   - platform: i2s_audio
@@ -531,7 +566,7 @@ sun:
   latitude: ${latitude}
   longitude: ${longitude}
 
-
+# set the default values for the LEDs
 script:
   - id: refresh_nightlight
     mode: restart
@@ -557,14 +592,14 @@ script:
           condition:
             lambda: "return id(nightlight).state || id(nightlight_active).state;"
           then:
-            - light.turn_on: 
-                id: leds_top
-                brightness: ${nightlight_brightness}
-                effect: "None"
+            # - light.turn_on: 
+            #     id: leds_top
+            #     brightness: ${nightlight_brightness}
+            #     effect: "None"
             - script.execute: led_on_nightlight
           else:
-            - light.turn_off: 
-                id: leds_top
+            # - light.turn_off: 
+            #     id: leds_top
             - light.turn_off: leds_nightlight
       - delay: 500ms
       - if:
@@ -574,7 +609,7 @@ script:
             - script.execute: led_on_button_left
           else:
             - script.execute: led_off_button_left
-      - delay: 500ms
+      # - delay: 500ms
       - if:
           condition:
             lambda: "return id(relay_2).state;"
@@ -582,7 +617,7 @@ script:
             - script.execute: led_on_button_middle
           else:
             - script.execute: led_off_button_middle
-      - delay: 500ms
+      # - delay: 500ms
       - if:
           condition:
             lambda: "return (${relay_count}>=3 && id(relay_3).state);"
@@ -591,6 +626,7 @@ script:
           else:
             - script.execute: led_off_button_right
 
+  # LED scripts
   - id: led_on_button_left
     mode: single
     then:
@@ -620,7 +656,6 @@ script:
           red: !lambda "return id(button_color)[0]/100.0;"
           green: !lambda "return id(button_color)[1]/100.0;"
           blue:  !lambda "return id(button_color)[2]/100.0;"
-
 
   - id: led_off_button_left
     mode: single
@@ -656,7 +691,6 @@ script:
             - light.turn_off:
                 id: leds_button_middle
 
-
   - id: led_off_button_right
     mode: single
     then:
@@ -673,7 +707,6 @@ script:
           else:
             - light.turn_off:
                 id: leds_button_right
-
 
   - id: led_on_nightlight
     mode: single
@@ -732,12 +765,12 @@ script:
       - delay: 2s
       - light.turn_off:
           id: leds_bottom
-
+  # more than two points touched
   - id: led_on_full_touch
     mode: restart
     then:
       - light.turn_on:
-          id: leds_top
+          id: leds_nightlight
           brightness: ${multi_touch_brightness}
           red: !lambda "return id(multi_touch_color)[0]/100.0;"
           green: !lambda "return id(multi_touch_color)[1]/100.0;"
@@ -745,14 +778,14 @@ script:
           effect: ${multi_touch_effect}
       - delay: 2s
       - light.turn_off:
-          id: leds_top
+          id: leds_nightlight
 
 
   - id: led_on_long_touch
     mode: restart
     then:
       - light.turn_on:
-          id: leds_top
+          id: leds_nightlight
           brightness: ${long_press_brightness}
           red: !lambda "return id(long_press_color)[0]/100.0;"
           green: !lambda "return id(long_press_color)[1]/100.0;"
@@ -760,7 +793,7 @@ script:
           effect: ${long_press_effect}
       - delay: 2s
       - light.turn_off:
-          id: leds_top
+          id: leds_nightlight
 
   - id: handle_release
     mode: restart
