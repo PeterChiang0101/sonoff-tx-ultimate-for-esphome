@@ -338,6 +338,42 @@ switch:
       then:
         - script.execute: refresh_led_default
 
+  - platform: template
+    name: "Left Button Light"
+    id: button_left
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      then:
+        - script.execute: led_on_button_left
+    on_turn_off:
+      then:
+        - script.execute: led_off_button_left
+          
+  - platform: template
+    name: "Middle Button Light"
+    id: button_middle
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      then:
+        - script.execute: led_on_button_middle
+    on_turn_off:
+      then:
+        - script.execute: led_off_button_middle   
+                  
+  - platform: template
+    name: "Right Button Light"
+    id: button_right
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      then:
+        - script.execute: led_on_button_right
+    on_turn_off:
+      then:
+        - script.execute: led_off_button_right
+
   - platform: restart
     name: "${friendly_name} Restart"
 
