@@ -248,9 +248,8 @@ binary_sensor:
           state: OFF
 
 switch:
-  - platform: gpio
+  - name: "Relay L1"
     id: relay_1
-    name: "${friendly_name} L1"
     pin: ${relay_1_pin}
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
@@ -267,10 +266,10 @@ switch:
             switch.is_on: coupled_button_L1
           then:
             - script.execute: led_off_button_left
+    platform: gpio
 
-  - platform: gpio
+  - name: "Relay L2"
     id: relay_2
-    name: "${friendly_name} L2"
     pin: ${relay_2_pin}
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
@@ -280,7 +279,6 @@ switch:
             switch.is_on: coupled_button_L2
           then:
             - script.execute: led_on_button_middle
-
     on_turn_off:
       then:
         if:
@@ -288,10 +286,10 @@ switch:
             switch.is_on: coupled_button_L2
           then:
             - script.execute: led_off_button_middle
+    platform: gpio
 
-  - platform: gpio
+  - name: "Relay L3"
     id: relay_3
-    name: "${friendly_name} L3"
     pin: ${relay_3_pin}
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
@@ -308,34 +306,29 @@ switch:
             switch.is_on: coupled_button_L3
           then:
             - script.execute: led_off_button_right
+    platform: gpio
 
-  - platform: gpio
+  - name: "Vibration"
     id: vibra
     pin: ${vibra_motor_pin}
-    name: "${friendly_name} Vibration"
     restore_mode: ALWAYS_OFF
+    entity_category: config
     on_turn_on:
       - delay: ${vibra_time}
       - switch.turn_off: vibra
+    platform: gpio
 
-  # - platform: gpio
-  #   id: pa_power
-  #   pin: ${pa_power_pin}
-  #   name: "PA Power"
-  #   internal: false
-  #   restore_mode: ALWAYS_ON
-
-  - platform: gpio
-    name: "touch panel power"
+  - name: "Touch panel - Power"
+    id: touch_power
     pin:
       number: ${touchpanel_power_pin}
       inverted: true
-    id: touch_power
     internal: true
     restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
+    platform: gpio
 
-  - platform: template
-    name: "Nightlight"
+  - name: "Nightlight - Sun Set Driven"
     id: nightlight
     internal: true
     optimistic: true
@@ -346,9 +339,9 @@ switch:
     on_turn_off:
       then:
         - script.execute: refresh_led_default
+    platform: template
 
-  - platform: template
-    name: "Nightlight"
+  - name: "Nightlight"
     id: nightlight_active
     icon: mdi:lightbulb-night
     optimistic: true
@@ -359,11 +352,12 @@ switch:
     on_turn_off:
       then:
         - script.execute: refresh_led_default
+    platform: template
 
-  - platform: template
-    name: "Indicator Left"
+  - name: "Light L1"
     id: button_left
     icon: mdi:wall-sconce-flat-variant
+    entity_category: config
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
@@ -372,11 +366,12 @@ switch:
     on_turn_off:
       then:
         - script.execute: led_off_button_left
-          
-  - platform: template
-    name: "Indicator Middle"
+    platform: template
+
+  - name: "Light L2"
     id: button_middle
     icon: mdi:wall-sconce-flat-variant
+    entity_category: config
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
@@ -384,12 +379,13 @@ switch:
         - script.execute: led_on_button_middle
     on_turn_off:
       then:
-        - script.execute: led_off_button_middle   
-                  
-  - platform: template
-    name: "Indicator Right"
+        - script.execute: led_off_button_middle
+    platform: template
+          
+  - name: "Light L3"
     id: button_right
     icon: mdi:wall-sconce-flat-variant
+    entity_category: config
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
@@ -398,28 +394,34 @@ switch:
     on_turn_off:
       then:
         - script.execute: led_off_button_right
-  
-  - platform: template
-    name: "Coupled Button L3"
-    id: coupled_button_L3
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
+    platform: template
 
-  - platform: template
-    name: "Coupled Button L2"
-    id: coupled_button_L2
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_ON
-  
-  - platform: template
-    name: "Coupled Button L1"
+  - name: "Coupled L1"
     id: coupled_button_L1
+    icon: mdi:handshake-outline
+    entity_category: config
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
+    platform: template
 
+  - name: "Coupled L2"
+    id: coupled_button_L2
+    icon: mdi:handshake-outline
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    platform: template
 
-  - platform: restart
-    name: "${friendly_name} Restart"
+  - name: "Coupled L3"
+    id: coupled_button_L3
+    icon: mdi:handshake-outline
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    platform: template
+
+  - name: "${friendly_name} Restart"
+    platform: restart
 
 # LED control & location
 light: 
@@ -430,6 +432,7 @@ light:
     num_leds: 32
     name: "NeoPixel Light"
     id: leds
+    entity_category: config
     default_transition_length: 0.7s
     effects:
       - addressable_rainbow:
