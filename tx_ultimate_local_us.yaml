@@ -172,6 +172,7 @@ binary_sensor:
   - platform: template
     name: "Touchfield 1"
     id: touchfield_1
+    icon: mdi:gesture-tap-button
     on_press:
       - if:
           condition:
@@ -186,6 +187,7 @@ binary_sensor:
   - platform: template
     name: "Touchfield 2"
     id: touchfield_2
+    icon: mdi:gesture-tap-button
     on_press:
       - if:
           condition:
@@ -200,6 +202,7 @@ binary_sensor:
   - platform: template
     name: "Touchfield 3"
     id: touchfield_3
+    icon: mdi:gesture-tap-button
     on_press:
       - if:
           condition:
@@ -212,8 +215,9 @@ binary_sensor:
           state: OFF
 
   - platform: template
-    name: "Swipe left"
+    name: "Swipe Left"
     id: swipe_left
+    icon: mdi:gesture-swipe-left
     on_press:
       - delay: ${button_on_time}
       - binary_sensor.template.publish:
@@ -221,8 +225,9 @@ binary_sensor:
           state: OFF
 
   - platform: template
-    name: "Swipe_right"
+    name: "Swipe Right"
     id: swipe_right
+    icon: mdi:gesture-swipe-right
     on_press:
       - delay: ${button_on_time}
       - binary_sensor.template.publish:
@@ -230,8 +235,9 @@ binary_sensor:
           state: OFF
 
   - platform: template
-    name: "Multi Touch"
+    name: "Multi-touch"
     id: multi_touch
+    icon: mdi:gesture-two-tap
     on_press:
       - delay: ${button_on_time}
       - binary_sensor.template.publish:
@@ -311,6 +317,7 @@ switch:
   - name: "Vibration"
     id: vibra
     pin: ${vibra_motor_pin}
+    icon: mdi:vibrate
     restore_mode: ALWAYS_OFF
     entity_category: config
     on_turn_on:
@@ -907,7 +914,7 @@ script:
           green: !lambda "return id(multi_touch_color)[1]/255.0;"
           blue:  !lambda "return id(multi_touch_color)[2]/255.0;"
           effect: ${multi_touch_effect}
-      - delay: 2s
+      - delay: 1.5s
       - light.turn_off:
           id: leds
 
