@@ -66,30 +66,38 @@ esphome:
     version: "1.0"
 
   on_boot:
-    priority: -100
-    then:
-      - binary_sensor.template.publish:
-          id: touchfield_1
-          state: OFF
-      - binary_sensor.template.publish:
-          id: touchfield_2
-          state: OFF
-      - binary_sensor.template.publish:
-          id: touchfield_3
-          state: OFF
-      - binary_sensor.template.publish:
-          id: multi_touch
-          state: OFF
-      - binary_sensor.template.publish:
-          id: swipe_left
-          state: OFF
-      - binary_sensor.template.publish:
-          id: swipe_right
-          state: OFF
-      - binary_sensor.template.publish:
-          id: long_press
-          state: OFF
-      - script.execute: refresh_led_default
+    - priority: 500
+      then:
+      - lambda: |- 
+          relay_3->set_internal(${relay_count} < 3);
+          touchfield_3->set_internal(${relay_count} < 3);
+          coupled_3->set_internal(${relay_count} < 3);
+          light_3->set_internal(${relay_count} < 3);
+
+    - priority: -100  # At this priority, pretty much everything should already be initialized.
+      then:
+        - binary_sensor.template.publish:
+            id: touchfield_1
+            state: OFF
+        - binary_sensor.template.publish:
+            id: touchfield_2
+            state: OFF
+        - binary_sensor.template.publish:
+            id: touchfield_3
+            state: OFF
+        - binary_sensor.template.publish:
+            id: multi_touch
+            state: OFF
+        - binary_sensor.template.publish:
+            id: swipe_left
+            state: OFF
+        - binary_sensor.template.publish:
+            id: swipe_right
+            state: OFF
+        - binary_sensor.template.publish:
+            id: long_press
+            state: OFF
+        - script.execute: refresh_led_default
 
 esp32:
   board: esp32dev
@@ -166,7 +174,7 @@ binary_sensor:
     on_press:
       - if:
           condition:
-            switch.is_on: coupled_button_L1
+            switch.is_on: coupled_1
           then:
             - switch.toggle: relay_1
       - delay: ${button_on_time}
@@ -181,7 +189,7 @@ binary_sensor:
     on_press:
       - if:
           condition:
-            switch.is_on: coupled_button_L2
+            switch.is_on: coupled_2
           then:
             - switch.toggle: relay_2
       - delay: ${button_on_time}
@@ -196,7 +204,7 @@ binary_sensor:
     on_press:
       - if:
           condition:
-            switch.is_on: coupled_button_L3
+            switch.is_on: coupled_3
           then:
             - switch.toggle: relay_3
       - delay: ${button_on_time}
@@ -253,14 +261,14 @@ switch:
       then:
         if:
           condition:
-            switch.is_on: coupled_button_L1
+            switch.is_on: coupled_1
           then:
             - script.execute: led_on_button_left
     on_turn_off:
       then:
         if:
           condition:
-            switch.is_on: coupled_button_L1
+            switch.is_on: coupled_1
           then:
             - script.execute: led_off_button_left
     platform: gpio
@@ -273,14 +281,14 @@ switch:
       then:
         if:
           condition:
-            switch.is_on: coupled_button_L2
+            switch.is_on: coupled_2
           then:
             - script.execute: led_on_button_middle
     on_turn_off:
       then:
         if:
           condition:
-            switch.is_on: coupled_button_L2
+            switch.is_on: coupled_2
           then:
             - script.execute: led_off_button_middle
     platform: gpio
@@ -293,14 +301,14 @@ switch:
       then:
         if:
           condition:
-            switch.is_on: coupled_button_L3
+            switch.is_on: coupled_3
           then:
             - script.execute: led_on_button_right
     on_turn_off:
       then:
         if:
           condition:
-            switch.is_on: coupled_button_L3
+            switch.is_on: coupled_3
           then:
             - script.execute: led_off_button_right
     platform: gpio
@@ -353,7 +361,7 @@ switch:
     platform: template
 
   - name: "Light L1"
-    id: button_left
+    id: light_1
     icon: mdi:wall-sconce-flat-variant
     entity_category: config
     optimistic: true
@@ -367,7 +375,7 @@ switch:
     platform: template
 
   - name: "Light L2"
-    id: button_middle
+    id: light_2
     icon: mdi:wall-sconce-flat-variant
     entity_category: config
     optimistic: true
@@ -381,7 +389,7 @@ switch:
     platform: template
           
   - name: "Light L3"
-    id: button_right
+    id: light_3
     icon: mdi:wall-sconce-flat-variant
     entity_category: config
     optimistic: true
@@ -395,7 +403,7 @@ switch:
     platform: template
 
   - name: "Coupled L1"
-    id: coupled_button_L1
+    id: coupled_1
     icon: mdi:handshake-outline
     entity_category: config
     optimistic: true
@@ -403,7 +411,7 @@ switch:
     platform: template
 
   - name: "Coupled L2"
-    id: coupled_button_L2
+    id: coupled_2
     icon: mdi:handshake-outline
     entity_category: config
     optimistic: true
@@ -411,7 +419,7 @@ switch:
     platform: template
 
   - name: "Coupled L3"
-    id: coupled_button_L3
+    id: coupled_3
     icon: mdi:handshake-outline
     entity_category: config
     optimistic: true
@@ -682,21 +690,21 @@ script:
             - light.turn_off: leds_nightlight
       - if:
           condition:
-            lambda: return (${relay_count} > 1 && id(relay_1).state && id(coupled_button_L1).state);
+            lambda: return (${relay_count} > 1 && id(relay_1).state && id(coupled_1).state);
           then:
             - script.execute: led_on_button_left
           else:
             - script.execute: led_off_button_left
       - if:
           condition:
-            lambda: return (${relay_count} == 3 && id(relay_2).state && id(coupled_button_L2).state) || (${relay_count}==1 && id(relay_1).state && id(coupled_button_L1).state);
+            lambda: return (${relay_count} == 3 && id(relay_2).state && id(coupled_2).state) || (${relay_count}==1 && id(relay_1).state && id(coupled_1).state);
           then:
             - script.execute: led_on_button_middle
           else:
             - script.execute: led_off_button_middle
       - if:
           condition:
-            lambda: return (${relay_count} == 2 && id(relay_2).state && id(coupled_button_L2).state) || (${relay_count}==3 && id(relay_3).state && id(coupled_button_L3).state);
+            lambda: return (${relay_count} == 2 && id(relay_2).state && id(coupled_2).state) || (${relay_count}==3 && id(relay_3).state && id(coupled_3).state);
           then:
             - script.execute: led_on_button_right
           else:
@@ -706,17 +714,33 @@ script:
   - id: led_on_button_left
     mode: single
     then:
-      - light.turn_on:
-          id: leds_button_left_3gang
-          brightness: !lambda |-
-            if(id(nightlight).state || id(nightlight_active).state){
-              return ${nightlight_brightness} + 0.1;
-            } else {
-              return ${button_brightness};
-            }
-          red: !lambda "return id(button_color)[0]/255.0;"
-          green: !lambda "return id(button_color)[1]/255.0;"
-          blue:  !lambda "return id(button_color)[2]/255.0;"
+      if:
+        condition:
+          lambda: return ${relay_count} == 3;
+        then:
+          - light.turn_on:
+              id: leds_button_left_3gang
+              brightness: !lambda |-
+                if(id(nightlight).state || id(nightlight_active).state){
+                  return ${nightlight_brightness} + 0.1;
+                } else {
+                  return ${button_brightness};
+                }
+              red: !lambda "return id(button_color)[0]/255.0;"
+              green: !lambda "return id(button_color)[1]/255.0;"
+              blue:  !lambda "return id(button_color)[2]/255.0;"
+        else:
+          - light.turn_on:
+              id: leds_button_left_2gang
+              brightness: !lambda |-
+                if(id(nightlight).state || id(nightlight_active).state){
+                  return ${nightlight_brightness} + 0.1;
+                } else {
+                  return ${button_brightness};
+                }
+              red: !lambda "return id(button_color)[0]/255.0;"
+              green: !lambda "return id(button_color)[1]/255.0;"
+              blue:  !lambda "return id(button_color)[2]/255.0;"
 
   - id: led_on_button_middle
     mode: single
@@ -736,17 +760,33 @@ script:
   - id: led_on_button_right
     mode: single
     then:
-      - light.turn_on:
-          id: leds_button_right_3gang
-          brightness: !lambda |-
-            if(id(nightlight).state || id(nightlight_active).state){
-              return ${nightlight_brightness} + 0.1;
-            } else {
-              return ${button_brightness};
-            }
-          red: !lambda "return id(button_color)[0]/255.0;"
-          green: !lambda "return id(button_color)[1]/255.0;"
-          blue:  !lambda "return id(button_color)[2]/255.0;"
+      if:
+        condition:
+          lambda: return ${relay_count} == 3;
+        then:
+          - light.turn_on:
+              id: leds_button_right_3gang
+              brightness: !lambda |-
+                if(id(nightlight).state || id(nightlight_active).state){
+                  return ${nightlight_brightness} + 0.1;
+                } else {
+                  return ${button_brightness};
+                }
+              red: !lambda "return id(button_color)[0]/255.0;"
+              green: !lambda "return id(button_color)[1]/255.0;"
+              blue:  !lambda "return id(button_color)[2]/255.0;"
+        else:
+          - light.turn_on:
+              id: leds_button_right_2gang
+              brightness: !lambda |-
+                if(id(nightlight).state || id(nightlight_active).state){
+                  return ${nightlight_brightness} + 0.1;
+                } else {
+                  return ${button_brightness};
+                }
+              red: !lambda "return id(button_color)[0]/255.0;"
+              green: !lambda "return id(button_color)[1]/255.0;"
+              blue:  !lambda "return id(button_color)[2]/255.0;"
 
   - id: led_off_button_left
     mode: single
@@ -755,16 +795,34 @@ script:
           condition:
             lambda: "return id(nightlight).state || id(nightlight_active).state;"
           then:
-            - light.turn_on:
-                id: leds_button_left_3gang
-                brightness: ${nightlight_brightness}
-                red: !lambda "return id(nightlight_color)[0]/255.0;"
-                green: !lambda "return id(nightlight_color)[1]/255.0;"
-                blue:  !lambda "return id(nightlight_color)[2]/255.0;"
+            - if:
+                condition:
+                  lambda: return ${relay_count} == 3;
+                then:
+                  - light.turn_on:
+                      id: leds_button_left_3gang
+                      brightness: ${nightlight_brightness}
+                      red: !lambda "return id(nightlight_color)[0]/255.0;"
+                      green: !lambda "return id(nightlight_color)[1]/255.0;"
+                      blue:  !lambda "return id(nightlight_color)[2]/255.0;"
+                else:
+                  - light.turn_on:
+                      id: leds_button_left_2gang
+                      brightness: ${nightlight_brightness}
+                      red: !lambda "return id(nightlight_color)[0]/255.0;"
+                      green: !lambda "return id(nightlight_color)[1]/255.0;"
+                      blue:  !lambda "return id(nightlight_color)[2]/255.0;"
           else:
-            - light.turn_off:
-                id: leds_button_left_3gang
-
+            - if:
+                condition:
+                  lambda: return ${relay_count} == 3;
+                then:
+                  - light.turn_off:
+                      id: leds_button_left_3gang
+                else:
+                  - light.turn_off:
+                      id: leds_button_left_2gang
+      
   - id: led_off_button_middle
     mode: single
     then:
@@ -789,15 +847,33 @@ script:
           condition:
             lambda: "return id(nightlight).state || id(nightlight_active).state;"
           then:
-            - light.turn_on:
-                id: leds_button_right_3gang
-                brightness: ${nightlight_brightness}
-                red: !lambda "return id(nightlight_color)[0]/255.0;"
-                green: !lambda "return id(nightlight_color)[1]/255.0;"
-                blue:  !lambda "return id(nightlight_color)[2]/255.0;"
+            - if:
+                condition:
+                  lambda: return ${relay_count} == 3;
+                then:
+                  - light.turn_on:
+                      id: leds_button_right_3gang
+                      brightness: ${nightlight_brightness}
+                      red: !lambda "return id(nightlight_color)[0]/255.0;"
+                      green: !lambda "return id(nightlight_color)[1]/255.0;"
+                      blue:  !lambda "return id(nightlight_color)[2]/255.0;"
+                else:
+                  - light.turn_on:
+                      id: leds_button_right_2gang
+                      brightness: ${nightlight_brightness}
+                      red: !lambda "return id(nightlight_color)[0]/255.0;"
+                      green: !lambda "return id(nightlight_color)[1]/255.0;"
+                      blue:  !lambda "return id(nightlight_color)[2]/255.0;"
           else:
-            - light.turn_off:
-                id: leds_button_right_3gang
+            - if:
+                condition:
+                  lambda: return ${relay_count} == 3;
+                then:
+                  - light.turn_off:
+                      id: leds_button_right_3gang
+                else:
+                  - light.turn_off:
+                      id: leds_button_right_2gang
 
   - id: led_on_nightlight
     mode: single
