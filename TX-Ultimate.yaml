@@ -830,15 +830,33 @@ script:
           condition:
             lambda: "return id(nightlight).state || id(nightlight_active).state;"
           then:
-            - light.turn_on:
-                id: leds_middle_3gang
-                brightness: ${nightlight_brightness}
-                red: !lambda "return id(nightlight_color)[0]/255.0;"
-                green: !lambda "return id(nightlight_color)[1]/255.0;"
-                blue:  !lambda "return id(nightlight_color)[2]/255.0;"
+            - if:
+                condition:
+                  lambda: return ${relay_count} == 3;
+                then:
+                  - light.turn_on:
+                      id: leds_middle_3gang
+                      brightness: ${nightlight_brightness}
+                      red: !lambda "return id(nightlight_color)[0]/255.0;"
+                      green: !lambda "return id(nightlight_color)[1]/255.0;"
+                      blue:  !lambda "return id(nightlight_color)[2]/255.0;"
+                else:
+                  - light.turn_on:
+                      id: leds_right_2gang
+                      brightness: ${nightlight_brightness}
+                      red: !lambda "return id(nightlight_color)[0]/255.0;"
+                      green: !lambda "return id(nightlight_color)[1]/255.0;"
+                      blue:  !lambda "return id(nightlight_color)[2]/255.0;"
           else:
-            - light.turn_off:
-                id: leds_middle_3gang
+            - if:
+                condition:
+                  lambda: return ${relay_count} == 3;
+                then:
+                  - light.turn_off:
+                      id: leds_middle_3gang
+                else:
+                  - light.turn_off:
+                      id: leds_right_2gang
 
   - id: led_off_right
     mode: single
@@ -847,33 +865,16 @@ script:
           condition:
             lambda: "return id(nightlight).state || id(nightlight_active).state;"
           then:
-            - if:
-                condition:
-                  lambda: return ${relay_count} == 3;
-                then:
-                  - light.turn_on:
-                      id: leds_right_3gang
-                      brightness: ${nightlight_brightness}
-                      red: !lambda "return id(nightlight_color)[0]/255.0;"
-                      green: !lambda "return id(nightlight_color)[1]/255.0;"
-                      blue:  !lambda "return id(nightlight_color)[2]/255.0;"
-                else:
-                  - light.turn_on:
-                      id: leds_right_2gang
-                      brightness: ${nightlight_brightness}
-                      red: !lambda "return id(nightlight_color)[0]/255.0;"
-                      green: !lambda "return id(nightlight_color)[1]/255.0;"
-                      blue:  !lambda "return id(nightlight_color)[2]/255.0;"
+            - light.turn_on:
+                id: leds_right_3gang
+                brightness: ${nightlight_brightness}
+                red: !lambda "return id(nightlight_color)[0]/255.0;"
+                green: !lambda "return id(nightlight_color)[1]/255.0;"
+                blue:  !lambda "return id(nightlight_color)[2]/255.0;"
           else:
-            - if:
-                condition:
-                  lambda: return ${relay_count} == 3;
-                then:
-                  - light.turn_off:
-                      id: leds_right_3gang
-                else:
-                  - light.turn_off:
-                      id: leds_right_2gang
+            - light.turn_off:
+                id: leds_right_3gang
+
 
   - id: led_on_nightlight
     mode: single
